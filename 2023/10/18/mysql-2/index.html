@@ -25,16 +25,16 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="B+Tree   一个节点有多个元素 叶子节点排好序 左边小 右边大 leaf pages 每一页作为一个节点 叶子节点直接有指针 非叶子节点都冗余了一份主键的值 （索引页） 叶子节点存的是表的数据 （数据页） 聚集索引 数据和索引在一棵树 从上往下找就是走索引 只走叶子节点就是全表扫描    InoDB 页 page 16KBInoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/images/b+tree.png">
-<meta property="og:image" content="http://example.com/images/page.png">
-<meta property="og:image" content="http://example.com/images/page1.png">
-<meta property="og:image" content="http://example.com/images/page2.png">
+<meta property="og:image" content="http://example.com/source/images/b+tree.png">
+<meta property="og:image" content="http://example.com/source/images/page.png">
+<meta property="og:image" content="http://example.com/source/images/page1.png">
+<meta property="og:image" content="http://example.com/source/images/page2.png">
 <meta property="article:published_time" content="2023-10-18T06:31:07.000Z">
-<meta property="article:modified_time" content="2023-10-20T02:52:37.431Z">
+<meta property="article:modified_time" content="2023-10-25T01:13:05.319Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/b+tree.png">
+<meta name="twitter:image" content="http://example.com/source/images/b+tree.png">
   <!-- Canonical links -->
   <link rel="canonical" href="http://example.com/2023/10/18/mysql-2/index.html">
   
@@ -392,14 +392,14 @@
 <li>从上往下找就是走索引</li>
 <li>只走叶子节点就是全表扫描</li>
 </ul>
-<img alt="b+tree.png" height="400" src="/images/b+tree.png" width="300"/>
+<img alt="b+tree.png" height="400" src="/source/images/b+tree.png" width="300"/>
 
 <p><strong>InoDB 页 page 16KB</strong><br>InoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降低性能</p>
-<img alt="page.png" height="300" width="400" src="/images/page.png"/>
+<img alt="page.png" height="300" width="400" src="/source/images/page.png"/>
 双向指针
-<img alt="page1.png" height="300" src="/images/page1.png" width="500"/>
+<img alt="page1.png" height="300" src="/source/images/page1.png" width="500"/>
 
-<h6 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h6><p>联合索引bcd<br>select * where b&gt;1; 不走索引 因为是*，需要回表N次磁盘IO &gt; 全表扫描<br>select * where b&gt;6; 走索引，因为只回表1次<br>select b where b&gt;1; 走索引<br>所以尽量把搜索字段写清楚<br><img alt="page2.png" height="400" src="/images/page2.png" width="500"/></p>
+<h6 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h6><p>联合索引bcd<br>select * where b&gt;1; 不走索引 因为是*，需要回表N次磁盘IO &gt; 全表扫描<br>select * where b&gt;6; 走索引，因为只回表1次<br>select b where b&gt;1; 走索引<br>所以尽量把搜索字段写清楚<br><img alt="page2.png" height="400" src="/source/images/page2.png" width="500"/></p>
 <p>varchar 指定字符比较规则 </p>
 <p>Buffer Pool 一个内存区域 缓存某一个页 磁盘里面复制到Buffer Pool,free链表对空闲页控制块进行管理。flush链表对脏页进行管理。lru淘汰机制 lru链表<br>Redo log </p>
 <p>update语句的流程</p>
