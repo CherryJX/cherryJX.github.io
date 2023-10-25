@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>订单水平分表 | Hexo</title>
+  <meta name="description" content="一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。 带来的复杂性问题，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="订单水平分表">
+<meta property="og:url" content="http://example.com/2023/10/09/horizontal-division-table-1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。 带来的复杂性问题，">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-10-09T01:31:08.000Z">
+<meta property="article:modified_time" content="2023-10-12T03:46:14.721Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2023/10/09/horizontal-division-table-1/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/CherryJX" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">JessieJ</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">PHP Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> QingDao, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="Search" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="Type something..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">Home</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">Archives</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">Categories</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">Tags</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-repository">
+          <a href="/repository">
+            
+            <i class="icon icon-project"></i>
+            
+            <span class="menu-title">Repository</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-books">
+          <a href="/books">
+            
+            <i class="icon icon-book-fill"></i>
+            
+            <span class="menu-title">Books</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-links">
+          <a href="/links">
+            
+            <i class="icon icon-friendship"></i>
+            
+            <span class="menu-title">Links</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">About</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/CherryJX" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">Board</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/">博客搭建</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9E%B6%E6%9E%84/">架构</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/" rel="tag">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/" rel="tag">laravel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" rel="tag">微服务</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9E%B6%E6%9E%84/" rel="tag">架构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BD%AF%E8%80%83/" rel="tag">软考</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%90%E7%BB%B4/" rel="tag">运维</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/MySQL/" style="font-size: 14px;">MySQL</a> <a href="/tags/Redis/" style="font-size: 13.5px;">Redis</a> <a href="/tags/hexo/" style="font-size: 13.5px;">hexo</a> <a href="/tags/laravel/" style="font-size: 13px;">laravel</a> <a href="/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" style="font-size: 13px;">微服务</a> <a href="/tags/%E6%9E%B6%E6%9E%84/" style="font-size: 13px;">架构</a> <a href="/tags/%E8%BD%AF%E8%80%83/" style="font-size: 13px;">软考</a> <a href="/tags/%E8%BF%90%E7%BB%B4/" style="font-size: 13px;">运维</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">Archive</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/10/">October 2023</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">September 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">March 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">February 2023</a><span class="archive-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/10/20/snowflake/" class="title">分布式ID</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-10-20T02:59:11.000Z" itemprop="datePublished">2023-10-20</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/10/18/mysql-2/" class="title">mysql 底层原理</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-10-18T06:31:07.000Z" itemprop="datePublished">2023-10-18</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/%E6%9E%B6%E6%9E%84/">架构</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/10/18/microservice/" class="title">微服务相关面试</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-10-18T01:22:01.000Z" itemprop="datePublished">2023-10-18</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/10/17/redis-1/" class="title">缓存穿透 缓存击穿 缓存雪崩</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-10-17T03:03:49.000Z" itemprop="datePublished">2023-10-17</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/10/13/redis/" class="title">分布式锁解决高并发场景下超卖问题</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-10-13T02:05:04.000Z" itemprop="datePublished">2023-10-13</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-horizontal-division-table-1" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      订单水平分表
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/10/09/horizontal-division-table-1/" class="article-date">
+	  <time datetime="2023-10-09T01:31:08.000Z" itemprop="datePublished">2023-10-09</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/MySQL/" rel="tag">MySQL</a>
+  </span>
+
+
+        
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/10/09/horizontal-division-table-1/#comments" class="article-comment-link">Comments</a></span>
+        
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。</p>
+<p>带来的复杂性问题，比如将订单拆分到多个表中，查询结果分页就不能像以前单张表那样直接查出来，统计总数也是，只能将各个表中的数据做一个汇总，分页然后返回。</p>
+<h6 id="分表规则问题："><a href="#分表规则问题：" class="headerlink" title="分表规则问题："></a>分表规则问题：</h6><ul>
+<li><p>规则1：事先建5张表，比如 orders_1, orders_2, orders_3, orders_4, orders_5, 然后按照id 对5取模来判断这笔订单存放到哪张表里，优点是数据平均分布。缺点是扩容困难，因为分表依赖于5，如果后期5张表压力也很大的情况下，需要扩展分表数量到10，会出现数据迁移问题需要耗费比较大的资源。</p>
+</li>
+<li><p>规则2：我们可以将订单表分为 orders_2021, orders_2022 按照年月来分，优点是相对而言比较容易扩展，缺点是数据可能分布不均匀，比如2022年下半年业务量突然提升，订单量就比较大。优点，具有时效性。缺点：元旦前一个月需要运维人员提前创建新表。</p>
+</li>
+<li><p>规则3：按照id 范围分表，id 在0-100w范围的数据放在orders_1表，id在1+100w-200w范围的数据放在orders_2表，优点是数据分布平均，缺点需要运维提前创建新表。</p>
+</li>
+</ul>
+<h6 id="主键问题："><a href="#主键问题：" class="headerlink" title="主键问题："></a>主键问题：</h6><p>之前单表很简单，就是主键自增， 现在分表之后需要一些手段来保证全局主键唯一。规则1需要自增的步长需要设为5，比如orders_1 的id 是1，6，11，16。 orders_2表的id 是2，7，12。规则2按照月份来分表的方式，往orders_2022插入第一条订单，就需要记录orders_2021最后一笔订单的id。规则3的话相对比较简单。</p>
+<h6 id="Sharing-key-问题："><a href="#Sharing-key-问题：" class="headerlink" title="Sharing-key 问题："></a>Sharing-key 问题：</h6><p>规则1我们用的sharing-key是订单表的id， 规则2我们用的sharing-key 是订单号，APP和solo订单使用订单号（2210171332836026）可以确定2022年10月，从而找到正确的表，Kiosk订单就需要根据支付时间确定订单要上传到哪个表。<br>如果我们用规则1，所有的关于订单的查询都要带着订单id，才能找到正确的表。<br>如果是规则2，表名查询一定得带上订单创建时间，才能找到正确的表。<br>如果是规则3，表名查询一定得带上订单id，才能找到正确的表。</p>
+<p>如果我想查找某个user的订单数据，只有user_id，那我需要把所有的订单分表都通过user_id遍历一遍，才能找到所有的订单数据，这样效率就很低了，影响性能。<br>如果我们要获取某个商户的所有订单数据，那我需要把所有的订单分表都通过uoid遍历一遍，才能找到所有的订单数据。</p>
+<h6 id="冷热数据分离："><a href="#冷热数据分离：" class="headerlink" title="冷热数据分离："></a>冷热数据分离：</h6><p>目前结合我们的业务我想到可以考虑冷热数据分离的方法。热数据是需要用户需要即时拿到的数据，供API或直接面向用户的系统使用。热数据需要保障服务质量和稳定性，时效性。冷数据是不需要即时分发给用户的数据，但这些数据需要长期积累，使我们可以做数据分析用和算法建模使用，满足一些非线上项目的需求。<br>例如订单表可以存储数据的时候存储两份，orders表存一份数据，orders_history表存一份数据，orders表我们加一个定时任务，每天凌晨删除半年以上的数据，orders_history表不做任何删除操作，只插入新的数据，保留最原始的数据。如果orders表发生订单状态更新，都会发一个消息队列mq，mq中带有订单的id和状态，orders_history接收到这个mq，再去做相应的状态更改，这样就能保证数据同步。这样，半年以内的数据在orders表查询，半年以上的数据去orders_history表查询。orders_history表的查询可以配合搜索引擎进行处理（比如Elasticsearch）。冷数据（离线数据）后面数量级可能比较大，我们可以考虑存储到NoSQL数据库。</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2023/10/09/horizontal-division-table-1/" title="订单水平分表" target="_blank" rel="external">http://example.com/2023/10/09/horizontal-division-table-1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/CherryJX" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/CherryJX" target="_blank"><span class="text-dark">JessieJ</span><small class="ml-1x">PHP Developer</small></a></h3>
+        <div>个人简介。</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/10/09/software-exam/" title="2022年系统架构师上午试题及答案"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;Newer</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/09/25/mysql/" title="SQL性能低下问题总结"><span>Older&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>$</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>Maybe you could buy me a cup of coffee.</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.png" alt="Scan Qrcode" title="Scan" />
+              </div>
+              <p class="text-muted mv">Scan this qrcode</p>
+              <p class="text-grey">Open alipay app scan this qrcode, buy me a coffee!</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.png" alt="Scan Qrcode" title="Scan" />
+              </div>
+              <p class="text-muted mv">Scan this qrcode</p>
+              <p class="text-grey">Open wechat app scan this qrcode, buy me a coffee!</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> alipay</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> wechat payment</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/CherryJX" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: 'Posts',
+            PAGES: 'Pages',
+            CATEGORIES: 'Categories',
+            TAGS: 'Tags',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: '',
+    appKey: '',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>
