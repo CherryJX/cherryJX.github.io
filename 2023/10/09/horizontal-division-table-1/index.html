@@ -18,15 +18,15 @@
   
   
   <title>订单水平分表 | Hexo</title>
-  <meta name="description" content="一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。 带来的复杂性问题，">
+  <meta name="description" content="阿里的规约:单表行数超过500万行或者单表容量超过2GB，才推荐分库分表。预计三年后达到这个级别。一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度">
 <meta property="og:type" content="article">
 <meta property="og:title" content="订单水平分表">
 <meta property="og:url" content="http://example.com/2023/10/09/horizontal-division-table-1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。 带来的复杂性问题，">
+<meta property="og:description" content="阿里的规约:单表行数超过500万行或者单表容量超过2GB，才推荐分库分表。预计三年后达到这个级别。一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-10-09T01:31:08.000Z">
-<meta property="article:modified_time" content="2023-10-12T03:46:14.721Z">
+<meta property="article:modified_time" content="2023-11-03T02:32:56.789Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary">
@@ -380,7 +380,7 @@
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <p>一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。</p>
+        <p>阿里的规约:单表行数超过500万行或者单表容量超过2GB，才推荐分库分表。预计三年后达到这个级别。<br>一般来说，在数据量及访问压力不是特别大的情况，首先考虑缓存技术，读写分离，索引技术等方案，若数据量极大（MySQL数据量达到1000w，通过计算三层B+Tree可以存放的最大数据条数），且持续增长，我们再考虑水平分表方案。因为前期不到万不得已轻易使用分表这个大招会给系统带来很多复杂性，会导致系统“过度设计”和“过度优化”。数据库层面我们可以先考虑缓存技术，读写分离，索引优化等。</p>
 <p>带来的复杂性问题，比如将订单拆分到多个表中，查询结果分页就不能像以前单张表那样直接查出来，统计总数也是，只能将各个表中的数据做一个汇总，分页然后返回。</p>
 <h6 id="分表规则问题："><a href="#分表规则问题：" class="headerlink" title="分表规则问题："></a>分表规则问题：</h6><ul>
 <li><p>规则1：事先建5张表，比如 orders_1, orders_2, orders_3, orders_4, orders_5, 然后按照id 对5取模来判断这笔订单存放到哪张表里，优点是数据平均分布。缺点是扩容困难，因为分表依赖于5，如果后期5张表压力也很大的情况下，需要扩展分表数量到10，会出现数据迁移问题需要耗费比较大的资源。</p>

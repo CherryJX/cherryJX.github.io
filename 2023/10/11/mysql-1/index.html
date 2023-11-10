@@ -18,18 +18,20 @@
   
   
   <title>MySQL事务四种隔离级别原理以及延伸问题 | Hexo</title>
-  <meta name="description" content="MySQL支持四种事务隔离级别：InnoDB引擎中，定义了四种隔离级别供我们使用，级别越高事务隔离性越好，但性能就越低，而隔离性由MySQL的各种锁以及MVCC机制来实现。MVCC(Multi-Version-Concurrency Control)多版本并发控制，就可以做到读写不堵塞，且避免了类似脏读这样的问题，主要是通过undo日志链来实现。  读未提交 （Read Uncommitted）:">
+  <meta name="description" content="MySQL支持四种事务隔离级别：InnoDB引擎中，定义了四种隔离级别供我们使用，级别越高事务隔离性越好，但性能就越低，而隔离性由MySQL的各种锁以及MVCC机制来实现。  读未提交 （Read Uncommitted）: 允许事务读取其他事务未提交的数据，可能导致脏读，不可重复读和幻读问题。 读已提交 （Read Committed）：保证事务读取的数据都是已提交的，避免了脏读，但有可能出现不">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL事务四种隔离级别原理以及延伸问题">
 <meta property="og:url" content="http://example.com/2023/10/11/mysql-1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="MySQL支持四种事务隔离级别：InnoDB引擎中，定义了四种隔离级别供我们使用，级别越高事务隔离性越好，但性能就越低，而隔离性由MySQL的各种锁以及MVCC机制来实现。MVCC(Multi-Version-Concurrency Control)多版本并发控制，就可以做到读写不堵塞，且避免了类似脏读这样的问题，主要是通过undo日志链来实现。  读未提交 （Read Uncommitted）:">
+<meta property="og:description" content="MySQL支持四种事务隔离级别：InnoDB引擎中，定义了四种隔离级别供我们使用，级别越高事务隔离性越好，但性能就越低，而隔离性由MySQL的各种锁以及MVCC机制来实现。  读未提交 （Read Uncommitted）: 允许事务读取其他事务未提交的数据，可能导致脏读，不可重复读和幻读问题。 读已提交 （Read Committed）：保证事务读取的数据都是已提交的，避免了脏读，但有可能出现不">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/readview.png">
 <meta property="article:published_time" content="2023-10-11T07:09:06.000Z">
-<meta property="article:modified_time" content="2023-10-13T01:01:11.656Z">
+<meta property="article:modified_time" content="2023-11-10T02:32:25.157Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/readview.png">
   <!-- Canonical links -->
   <link rel="canonical" href="http://example.com/2023/10/11/mysql-1/index.html">
   
@@ -380,11 +382,11 @@
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h6 id="MySQL支持四种事务隔离级别："><a href="#MySQL支持四种事务隔离级别：" class="headerlink" title="MySQL支持四种事务隔离级别："></a>MySQL支持四种事务隔离级别：</h6><p>InnoDB引擎中，定义了四种隔离级别供我们使用，级别越高事务隔离性越好，但性能就越低，而隔离性由MySQL的各种锁以及MVCC机制来实现。<br>MVCC(Multi-Version-Concurrency Control)多版本并发控制，就可以做到读写不堵塞，且避免了类似脏读这样的问题，主要是通过undo日志链来实现。</p>
+        <h6 id="MySQL支持四种事务隔离级别："><a href="#MySQL支持四种事务隔离级别：" class="headerlink" title="MySQL支持四种事务隔离级别："></a>MySQL支持四种事务隔离级别：</h6><p>InnoDB引擎中，定义了四种隔离级别供我们使用，级别越高事务隔离性越好，但性能就越低，而隔离性由MySQL的各种锁以及MVCC机制来实现。</p>
 <ul>
 <li>读未提交 （Read Uncommitted）: 允许事务读取其他事务未提交的数据，可能导致脏读，不可重复读和幻读问题。</li>
 <li>读已提交 （Read Committed）：保证事务读取的数据都是已提交的，避免了脏读，但有可能出现不可重复读和幻读问题。（语句级快照）</li>
-<li>可重复读 （Repeatable Read）：Mysql默认的事务隔离级别，该隔离级别在读提交的基础上，进一步限制了并发事务对数据的修改，确保了事务读取的数据在整个事务期间不变，但仍然存在幻读问题。（事务级快照）</li>
+<li>可重复读 （Repeatable Read）：Mysql默认的事务隔离级别，该隔离级别在读提交的基础上，进一步限制了并发事务对数据的修改，确保了事务读取的数据在<br>整个事务期间不变，但仍然存在幻读问题。（事务级快照）</li>
 <li>串行化（serializable）：该隔离级别是最高的隔离级别，它确保了事务的串行执行，避免了脏读，不可重复读和幻读问题，但也会降低系统的并发度。</li>
 </ul>
 <h6 id="搞懂脏读-不可重复读-幻读"><a href="#搞懂脏读-不可重复读-幻读" class="headerlink" title="搞懂脏读 不可重复读 幻读"></a>搞懂脏读 不可重复读 幻读</h6><ul>
@@ -392,6 +394,24 @@
 <li>不可重复读， 在一个事务内，最开始读到的数据和事务结束前任意时刻读到的同一批数据存在不一致的情况。读未提交和读提交时，会发生不可重复读现象。</li>
 <li>幻读， 事务A对表所有数据进行修改，突然事务B插入一条数据并提交，当事务A提交了修改数据操作之后读取全部数据，发现还有一条未更新的数据，就是幻读。</li>
 </ul>
+<p>MVCC(Multi-Version-Concurrency Control)多版本并发控制，就可以做到读写不堵塞(读写请求冲突时不用加锁)，且避免了类似脏读这样的问题，主要是通过<br>undo日志链来实现。<br><strong>当前读</strong><br>读取的数据库记录都是当前<strong>最新的版本</strong>，会对当去读取的数据进行加锁，防止其他事务修改数据。是悲观锁的一种操作。</p>
+<ul>
+<li>select lock in share mode(共享锁)</li>
+<li>select for update（排它锁）</li>
+<li>update（排他锁）</li>
+<li>insert （排他锁）</li>
+<li>delete （排他锁)<br><strong>快照读</strong><br>快照读的实现是基于多版本并发控制，即MVCC,既然是多版本，那么快照读读到的数据不一定是当前最新的数据，有可能是之前的历史版本的数据。读已提交和重复读都是<br>基于MVCC实现的。</li>
+<li>不加锁的select 操作（注意：事务级别不是串行化）</li>
+</ul>
+<p>ACID<br>原子性 undo log<br>持久性 redo log<br>隔离性 加锁 MVCC</p>
+<p>ReadView 就是一个快照，有语句级快照，比如事务中一个select生成一个快照，事务级快照，当前事务只有一个快照，creator_trx_id 生成该快照的事务id。<br>Read View中四变量。</p>
+<ol>
+<li>m_ids 活跃事务（活跃事务就是没提交的事务）集合，</li>
+<li>trx_id 当前事务id，</li>
+<li>min_trx_id 集合中的最小值，</li>
+<li>max_trx_id 集合中最大值的下个值，表示生成ReadView时系统中应该分配给下一个事务的id值</li>
+<li>creator_trx_id 表示生成该ReadView的事务的事务id<br>判断方法可以逆推，就是凡是小于最小值，不包含活跃事务里面的，刚好等于当前事务的id，都可以 查询最新值。其他任何情况都要一直递归查询undo日志，<br>直到符合这三个条件为止。<br><img src="/../images/readview.png" alt="readview.png"></li>
+</ol>
 
       
     </div>
