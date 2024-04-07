@@ -17,26 +17,16 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>mysql 底层原理 | Hexo</title>
-  <meta name="description" content="B+Tree   一个节点有多个元素 叶子节点排好序 左边小 右边大 leaf pages 每一页作为一个节点 叶子节点直接有指针 非叶子节点都冗余了一份主键的值 （索引页） 叶子节点存的是表的数据 （数据页） 聚集索引 数据和索引在一棵树 从上往下找就是走索引 只走叶子节点就是全表扫描   InoDB 页 page 16KBInoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降">
-<meta property="og:type" content="article">
-<meta property="og:title" content="mysql 底层原理">
-<meta property="og:url" content="http://example.com/2023/10/18/mysql-2/index.html">
+  <title>Archive: 2024/4 | Hexo</title>
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/archives/2024/04/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="B+Tree   一个节点有多个元素 叶子节点排好序 左边小 右边大 leaf pages 每一页作为一个节点 叶子节点直接有指针 非叶子节点都冗余了一份主键的值 （索引页） 叶子节点存的是表的数据 （数据页） 聚集索引 数据和索引在一棵树 从上往下找就是走索引 只走叶子节点就是全表扫描   InoDB 页 page 16KBInoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/images/b+tree.png">
-<meta property="og:image" content="http://example.com/images/page.png">
-<meta property="og:image" content="http://example.com/images/page1.png">
-<meta property="og:image" content="http://example.com/images/page2.png">
-<meta property="article:published_time" content="2023-10-18T06:31:07.000Z">
-<meta property="article:modified_time" content="2023-11-13T00:55:51.146Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/b+tree.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/2023/10/18/mysql-2/index.html">
+  <link rel="canonical" href="http://example.com/archives/2024/04/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -344,195 +334,58 @@
   
   
 <main class="main" role="main">
-  <div class="content">
-  <article id="post-mysql-2" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  	<article class="content article article-archives article-type-list" itemscope="">
+	    <header class="article-header">
+	      <h1 itemprop="title">Archive: 2024/4</h1>
+	      <p class="text-muted">Total 15 articles</p>
+	    </header>
+	    <div class="article-body">
+	      
+  
+  
     
-    <div class="article-header">
+    
       
-        
-  
-    <h1 class="article-title" itemprop="name">
-      mysql 底层原理
-    </h1>
-  
-
       
-      <div class="article-meta">
-        <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/2023/10/18/mysql-2/" class="article-date">
-	  <time datetime="2023-10-18T06:31:07.000Z" itemprop="datePublished">2023-10-18</time>
-	</a>
-</span>
-        
-        
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/MySQL/" rel="tag">MySQL</a>
-  </span>
-
-
-        
-
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/10/18/mysql-2/#comments" class="article-comment-link">Comments</a></span>
-        
-      </div>
-    </div>
-    <div class="article-entry marked-body" itemprop="articleBody">
-      
-        <p><strong>B+Tree</strong> </p>
-<ul>
-<li>一个节点有多个元素</li>
-<li>叶子节点排好序 左边小 右边大</li>
-<li>leaf pages 每一页作为一个节点</li>
-<li>叶子节点直接有指针</li>
-<li>非叶子节点都冗余了一份主键的值 （索引页）</li>
-<li>叶子节点存的是表的数据 （数据页）</li>
-<li>聚集索引 数据和索引在一棵树</li>
-<li>从上往下找就是走索引</li>
-<li>只走叶子节点就是全表扫描</li>
-</ul>
-<p><img src="/../images/b+tree.png" alt="b+tree.png"></p>
-<p><strong>InoDB 页 page 16KB</strong><br>InoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降低性能</p>
-<p><img src="/../images/page.png" alt="page.png"><br>双向指针<br><img src="/../images/page1.png" alt="page1.png"></p>
-<h6 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h6><p>联合索引bcd<br>select * where b&gt;1; 不走索引 因为是*，需要回表N次磁盘IO &gt; 全表扫描<br>select * where b&gt;6; 走索引，因为只回表1次<br>select b where b&gt;1; 走索引<br>所以尽量把搜索字段写清楚<br><img src="/../images/page2.png" alt="page2.png"></p>
-<p>varchar 指定字符比较规则 </p>
-<p>Buffer Pool 一个内存区域 缓存某一个页 磁盘里面复制到Buffer Pool,free链表对空闲页控制块进行管理。flush链表对脏页进行管理。lru淘汰机制 lru链表<br>Redo log </p>
-<p>update语句的流程</p>
-<ul>
-<li>修改Buffer pool里面的数据 – 脏页</li>
-<li>update 语句生产一个 redo log –&gt;log buffer</li>
-<li>redo log 持久化 (事务提交的时候) binlog undo log</li>
-<li>修改成功<br> 假设Mysql 挂掉了 ，重启后内存清空了，redo log 会恢复磁盘的数据。如果不用redo log，修改完Buffer pool 直接修改磁盘页数据，会做随机IO寻道</li>
-</ul>
-<p>binlog 记录的是sql。主从里面用到的<br>redo log 记录的某一页的某个地址开始的某个数据哪些修改<br>undo log 反向操作的日志</p>
-
-      
-    </div>
-    <div class="article-footer">
-      <blockquote class="mt-2x">
-  <ul class="post-copyright list-unstyled">
-    
-    <li class="post-copyright-link hidden-xs">
-      <strong>本文链接：</strong>
-      <a href="http://example.com/2023/10/18/mysql-2/" title="mysql 底层原理" target="_blank" rel="external">http://example.com/2023/10/18/mysql-2/</a>
-    </li>
-    
-    <li class="post-copyright-license">
-      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
-    </li>
-  </ul>
-</blockquote>
-
-
-<div class="panel panel-default panel-badger">
-  <div class="panel-body">
-    <figure class="media">
-      <div class="media-left">
-        <a href="https://github.com/CherryJX" target="_blank" class="img-burn thumb-sm visible-lg">
-          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
-        </a>
-      </div>
-      <div class="media-body">
-        <h3 class="media-heading"><a href="https://github.com/CherryJX" target="_blank"><span class="text-dark">JessieJ</span><small class="ml-1x">PHP Developer</small></a></h3>
-        <div>个人简介。</div>
-      </div>
-    </figure>
-  </div>
-</div>
-
-
-    </div>
-  </article>
-  
-    
-  <section id="comments">
-  	
-      <div id="vcomments"></div>
-    
-  </section>
-
-
-  
-</div>
-
-  <nav class="bar bar-footer clearfix" data-stick-bottom>
-  <div class="bar-inner">
-  
-  <ul class="pager pull-left">
-    
-    <li class="prev">
-      <a href="/2023/10/20/snowflake/" title="分布式ID"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;Newer</span></a>
-    </li>
-    
-    
-    <li class="next">
-      <a href="/2023/10/18/microservice/" title="微服务相关面试"><span>Older&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
-    </li>
-    
-    
-  </ul>
-  
-  
-  <!-- Button trigger modal -->
-  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>$</span></button>
-  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
-    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
-  </div> -->
-  
-  
-  <div class="bar-right">
-    
-    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
-    
-  </div>
-  </div>
-</nav>
-  
-<!-- Modal -->
-<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content donate">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <div class="modal-body">
-        <div class="donate-box">
-          <div class="donate-head">
-            <p>Maybe you could buy me a cup of coffee.</p>
-          </div>
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
-              <div class="donate-payimg">
-                <img src="/images/donate/alipayimg.png" alt="Scan Qrcode" title="Scan" />
-              </div>
-              <p class="text-muted mv">Scan this qrcode</p>
-              <p class="text-grey">Open alipay app scan this qrcode, buy me a coffee!</p>
-            </div>
-            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
-              <div class="donate-payimg">
-                <img src="/images/donate/wechatpayimg.png" alt="Scan Qrcode" title="Scan" />
-              </div>
-              <p class="text-muted mv">Scan this qrcode</p>
-              <p class="text-grey">Open wechat app scan this qrcode, buy me a coffee!</p>
-            </div>
-          </div>
-          <div class="donate-footer">
-            <ul class="nav nav-tabs nav-justified" role="tablist">
-              <li role="presentation" class="active">
-                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> alipay</a>
-              </li>
-              <li role="presentation" class="">
-                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> wechat payment</a>
-              </li>
-            </ul>
-          </div>
+      <section class="panel panel-default b-no">
+        <div class="panel-heading" role="tab">
+          <h3 class="panel-title">
+            <a data-toggle="collapse" href="#collapse2024" aria-expanded="true">
+              <i class="icon icon-calendar-plus text-active"></i><i class="icon icon-calendar-minus text"></i>
+              2024
+            </a>
+            <!-- <a href="/archives/2024" class="archive-year">2024</a> -->
+          </h3>
         </div>
-      </div>
-    </div>
-  </div>
-</div>
+        <div id="collapse2024" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="heading2024">
+        <div class="panel-body">
+          <div class="collection">
+    
+    
+<a href="/2024/04/07/parenting1/" class="collection-item"   itemprop="url">
+  <time datetime="2024-04-07T00:43:36.000Z" itemprop="datePublished">2024-04-07</time>
+  <span>&nbsp;&nbsp;&nbsp;</span> parenting1
+</a>
 
 
+  
+    
+    
+    
+<a href="/2024/04/03/exam-study1/" class="collection-item"   itemprop="url">
+  <time datetime="2024-04-03T06:47:16.000Z" itemprop="datePublished">2024-04-03</time>
+  <span>&nbsp;&nbsp;&nbsp;</span> 页式存储、段式存储、段页式存储和物理逻辑地址转换
+</a>
 
+
+  
+  
+    </div></div></div></section>
+  
+
+	    </div>
+  	</article>
+  	 	
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -585,37 +438,6 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
-
-   
-
-
-
-
-   
-    
-  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/valine"></script>
-  <script type="text/javascript">
-  var GUEST = ['nick', 'mail', 'link'];
-  var meta = 'nick,mail,link';
-  meta = meta.split(',').filter(function(item) {
-    return GUEST.indexOf(item) > -1;
-  });
-  new Valine({
-    el: '#vcomments',
-    verify: false,
-    notify: false,
-    appId: '',
-    appKey: '',
-    placeholder: 'Just go go',
-    avatar: 'mm',
-    meta: meta,
-    pageSize: '10' || 10,
-    visitor: false
-  });
-  </script>
-
-     
 
 
 

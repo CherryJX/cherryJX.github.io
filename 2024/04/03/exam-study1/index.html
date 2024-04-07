@@ -17,26 +17,29 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>mysql 底层原理 | Hexo</title>
-  <meta name="description" content="B+Tree   一个节点有多个元素 叶子节点排好序 左边小 右边大 leaf pages 每一页作为一个节点 叶子节点直接有指针 非叶子节点都冗余了一份主键的值 （索引页） 叶子节点存的是表的数据 （数据页） 聚集索引 数据和索引在一棵树 从上往下找就是走索引 只走叶子节点就是全表扫描   InoDB 页 page 16KBInoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降">
+  <title>页式存储、段式存储、段页式存储和物理逻辑地址转换 | Hexo</title>
+  <meta name="description" content="转载来自 转载地址 二、页式存储管理2.1 页式存储管理原理高级程序语言在设计时使用逻辑地址 ，但在运行时需要用物理地址在内存中寻找，这就涉及到逻辑地址和物理地址的转换问题，软考中经常考到。页式存储是把计算机的存储器划分成大小相等的多个区域，每个区域称为一块，并对它们按照顺序编号。 1物理地址 &#x3D; 块号 X 块长 + 页内地址 而程序的逻辑地址是将内存划分为多块大小相等的页，同样按顺序编号。在分">
 <meta property="og:type" content="article">
-<meta property="og:title" content="mysql 底层原理">
-<meta property="og:url" content="http://example.com/2023/10/18/mysql-2/index.html">
+<meta property="og:title" content="页式存储、段式存储、段页式存储和物理逻辑地址转换">
+<meta property="og:url" content="http://example.com/2024/04/03/exam-study1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="B+Tree   一个节点有多个元素 叶子节点排好序 左边小 右边大 leaf pages 每一页作为一个节点 叶子节点直接有指针 非叶子节点都冗余了一份主键的值 （索引页） 叶子节点存的是表的数据 （数据页） 聚集索引 数据和索引在一棵树 从上往下找就是走索引 只走叶子节点就是全表扫描   InoDB 页 page 16KBInoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降">
+<meta property="og:description" content="转载来自 转载地址 二、页式存储管理2.1 页式存储管理原理高级程序语言在设计时使用逻辑地址 ，但在运行时需要用物理地址在内存中寻找，这就涉及到逻辑地址和物理地址的转换问题，软考中经常考到。页式存储是把计算机的存储器划分成大小相等的多个区域，每个区域称为一块，并对它们按照顺序编号。 1物理地址 &#x3D; 块号 X 块长 + 页内地址 而程序的逻辑地址是将内存划分为多块大小相等的页，同样按顺序编号。在分">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/images/b+tree.png">
-<meta property="og:image" content="http://example.com/images/page.png">
-<meta property="og:image" content="http://example.com/images/page1.png">
-<meta property="og:image" content="http://example.com/images/page2.png">
-<meta property="article:published_time" content="2023-10-18T06:31:07.000Z">
-<meta property="article:modified_time" content="2023-11-13T00:55:51.146Z">
+<meta property="og:image" content="http://example.com/images/%E8%BF%9B%E7%A8%8B%E5%AD%98%E5%82%A8.png">
+<meta property="og:image" content="http://example.com/images/%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8.png">
+<meta property="og:image" content="http://example.com/images/%E9%80%BB%E8%BE%91%E5%9C%B0%E5%9D%80.png">
+<meta property="og:image" content="http://example.com/images/%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80.png">
+<meta property="og:image" content="http://example.com/images/%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E9%80%BB%E8%BE%91%E5%9C%B0%E5%9D%80.png">
+<meta property="og:image" content="http://example.com/images/%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84.png">
+<meta property="og:image" content="http://example.com/images/%E6%AE%B5%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8.png">
+<meta property="article:published_time" content="2024-04-03T06:47:16.000Z">
+<meta property="article:modified_time" content="2024-04-03T07:24:20.415Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="软考">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/images/b+tree.png">
+<meta name="twitter:image" content="http://example.com/images/%E8%BF%9B%E7%A8%8B%E5%AD%98%E5%82%A8.png">
   <!-- Canonical links -->
-  <link rel="canonical" href="http://example.com/2023/10/18/mysql-2/index.html">
+  <link rel="canonical" href="http://example.com/2024/04/03/exam-study1/index.html">
   
     <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -345,14 +348,14 @@
   
 <main class="main" role="main">
   <div class="content">
-  <article id="post-mysql-2" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-exam-study1" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
         
   
     <h1 class="article-title" itemprop="name">
-      mysql 底层原理
+      页式存储、段式存储、段页式存储和物理逻辑地址转换
     </h1>
   
 
@@ -360,52 +363,58 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2023/10/18/mysql-2/" class="article-date">
-	  <time datetime="2023-10-18T06:31:07.000Z" itemprop="datePublished">2023-10-18</time>
+	<a href="/2024/04/03/exam-study1/" class="article-date">
+	  <time datetime="2024-04-03T06:47:16.000Z" itemprop="datePublished">2024-04-03</time>
 	</a>
 </span>
         
         
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/MySQL/" rel="tag">MySQL</a>
+	<a class="article-tag-link-link" href="/tags/%E8%BD%AF%E8%80%83/" rel="tag">软考</a>
   </span>
 
 
         
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/10/18/mysql-2/#comments" class="article-comment-link">Comments</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2024/04/03/exam-study1/#comments" class="article-comment-link">Comments</a></span>
         
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <p><strong>B+Tree</strong> </p>
+        <p><img src="/../images/%E8%BF%9B%E7%A8%8B%E5%AD%98%E5%82%A8.png" alt="进程存储.png"></p>
+<p>转载来自 <a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/1277560">转载地址</a></p>
+<h4 id="二、页式存储管理"><a href="#二、页式存储管理" class="headerlink" title="二、页式存储管理"></a>二、页式存储管理</h4><h5 id="2-1-页式存储管理原理"><a href="#2-1-页式存储管理原理" class="headerlink" title="2.1 页式存储管理原理"></a>2.1 页式存储管理原理</h5><p>高级程序语言在设计时使用<strong>逻辑地址</strong> ，但在运行时需要用物理地址在内存中寻找，这就涉及到<strong>逻辑地址和物理地址的转换</strong>问题，软考中经常考到。<br><strong>页式存储</strong>是把计算机的存储器划分成大小相等的多个区域，每个区域称为一块，并对它们按照顺序编号。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">物理地址 = 块号 X 块长 + 页内地址</span><br></pre></td></tr></table></figure>
+<p>而程序的逻辑地址是将内存划分为多块大小相等的页，同样按顺序编号。<br>在分页式存储模式中，允许将每一页分散存储在物理块中，要求程序能在主存（内存）中找到每个页面所对应的物理块，确保作业的正确运行。物理地址的块是真实存在的，而逻辑地址是人们在编程时拟定的，<strong>所以有一个关联表，即页表在分页式存储模式中，允许将每一页分散存储在物理块中，要求程序能在主存（内存）中找到每个页面所对应的物理块，确保作业的正确运行。物理地址的块是真实存在的，而逻辑地址是人们在编程时拟定的，</strong>所以有一个关联表，即页表**。</p>
+<p>总体的结构图如下：<br><img src="/../images/%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8.png"><br>使用了<strong>页式存储</strong>，比如每一页设定为 4K 大小。<br>我们运行一个需要 503K 内存的程序，只需要为其分配 126 页即可，剩下浪费的 1K 可以忽略不计，也就是<strong>利用率高、碎片小</strong>。<br>有了固定页面大小之后，取址计算可通过乘法计算，<strong>分配和管理比较简单</strong>。<br>但使用页式存储需要实时维护页表，<strong>增加了系统开销</strong>。<br>根据经验表明，<strong>使用页式存储可能会出现倒挂现象</strong>，即内存给与越多，缺页率可能反而更多，这个后续章节会讲到。</p>
+<hr>
+<p>总的来说，页式存储的流程如下：</p>
 <ul>
-<li>一个节点有多个元素</li>
-<li>叶子节点排好序 左边小 右边大</li>
-<li>leaf pages 每一页作为一个节点</li>
-<li>叶子节点直接有指针</li>
-<li>非叶子节点都冗余了一份主键的值 （索引页）</li>
-<li>叶子节点存的是表的数据 （数据页）</li>
-<li>聚集索引 数据和索引在一棵树</li>
-<li>从上往下找就是走索引</li>
-<li>只走叶子节点就是全表扫描</li>
+<li>将进程虚拟空间划分为长度相等的多个页，并按顺序编号。</li>
+<li>将内存空间同样划分为多个存储块（物理块），和页一样大，同样按顺序编号。</li>
+<li>为进程分配内存时，以块为单位，根据页表匹配，将若干页分别装入可以不相邻的物理块中。</li>
 </ul>
-<p><img src="/../images/b+tree.png" alt="b+tree.png"></p>
-<p><strong>InoDB 页 page 16KB</strong><br>InoDB 建议用自增主键，不用UUID做主键，插入有可能重新调整页 降低性能</p>
-<p><img src="/../images/page.png" alt="page.png"><br>双向指针<br><img src="/../images/page1.png" alt="page1.png"></p>
-<h6 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h6><p>联合索引bcd<br>select * where b&gt;1; 不走索引 因为是*，需要回表N次磁盘IO &gt; 全表扫描<br>select * where b&gt;6; 走索引，因为只回表1次<br>select b where b&gt;1; 走索引<br>所以尽量把搜索字段写清楚<br><img src="/../images/page2.png" alt="page2.png"></p>
-<p>varchar 指定字符比较规则 </p>
-<p>Buffer Pool 一个内存区域 缓存某一个页 磁盘里面复制到Buffer Pool,free链表对空闲页控制块进行管理。flush链表对脏页进行管理。lru淘汰机制 lru链表<br>Redo log </p>
-<p>update语句的流程</p>
+<hr>
+<h5 id="2-2-逻辑地址和物理地址转换"><a href="#2-2-逻辑地址和物理地址转换" class="headerlink" title="2.2 逻辑地址和物理地址转换"></a>2.2 逻辑地址和物理地址转换</h5><p>页式存储地址可分为页号（P）和页内地址（W），如下图所示。<br><img src="/../images/%E9%80%BB%E8%BE%91%E5%9C%B0%E5%9D%80.png"></p>
+<p>物理地址也可分为块号和页内地址，如下图所示。<br><img src="/../images/%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80.png"></p>
+<p>由此可得，在进行逻辑地址和物理地址转换时，<strong>只需要根据页表，将页号替换为块号（页帧号）即可，而后面的页内地址无需变动</strong>。</p>
+<p><code>题目：比如进程 P 有 6 个页面，页号分为是 0 到 5，页面大小为 4K，页表如下所示，已知逻辑地址为 5A29H，求十六进制的物理地址。</code><br>因为页面大小为 <strong>4K</strong>，4K &#x3D; 2 的 12 次方，可得页内地址为 <strong>12 位</strong>。<br>已知逻辑地址为 <strong>5A29H</strong>，转换为二进制就是 0101 1010 0010 1001，后面的 12 位（1010 0010 1001）就是页内地址。<br>可得前面四位 0101 就是页号，查表可得块号为 6，转换二进制为 0110。<br>所以物理地址的二进制为 0110 1010 0010 1001，转换十六进制为 6A29H。</p>
+<h4 id="三、段式存储管理"><a href="#三、段式存储管理" class="headerlink" title="三、段式存储管理"></a>三、段式存储管理</h4><p>简单来说，段式存储管理是将页式存储组织的页大小设置为不固定。<br>因为程序一般都是由主程序、子程序、堆栈等元素组成，每一段都有自己独立的作用，我们不能去断章取义，所以将一段作为单位存储在内存中，也是一种很好的方式，这就是段式存储。<br>每个作业都由独立段组成，可以给段做个编号，即逻辑地址从 0 开始编号。<br>段内地址是连续的，段和段之间的地址是不连续的，段式存储的逻辑地址由段号和段内地址组成，如下所示。<br><img src="/../images/%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E9%80%BB%E8%BE%91%E5%9C%B0%E5%9D%80.png"></p>
+<p>段式存储的结构如下所示：</p>
+<p><img src="/../images/%E6%AE%B5%E5%BC%8F%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84.png"></p>
 <ul>
-<li>修改Buffer pool里面的数据 – 脏页</li>
-<li>update 语句生产一个 redo log –&gt;log buffer</li>
-<li>redo log 持久化 (事务提交的时候) binlog undo log</li>
-<li>修改成功<br> 假设Mysql 挂掉了 ，重启后内存清空了，redo log 会恢复磁盘的数据。如果不用redo log，修改完Buffer pool 直接修改磁盘页数据，会做随机IO寻道</li>
+<li>优点：多个程序可共享内存，而且读写互不影响。</li>
+<li>缺点：内存利用率低，碎片大。</li>
 </ul>
-<p>binlog 记录的是sql。主从里面用到的<br>redo log 记录的某一页的某个地址开始的某个数据哪些修改<br>undo log 反向操作的日志</p>
+<hr>
+<h4 id="四、段页式存储管理"><a href="#四、段页式存储管理" class="headerlink" title="四、段页式存储管理"></a>四、段页式存储管理</h4><p>段页式存储管理方式结合了页式存储和段式存储的方法，采用了分段的方式，每一段作业独立编程，再把段分成若干个页面，相当于<strong>在段式的基础上再套了一层页式存储算法</strong>，存储结构如下所示。<br><img src="/../images/%E6%AE%B5%E9%A1%B5%E5%BC%8F%E5%AD%98%E5%82%A8.png"></p>
+<ul>
+<li>优点：利用率高、物理地址连续存储。</li>
+<li>缺点：使用段页式存储需要实时维护段页表，增加了系统开销，使得执行速度下降。</li>
+</ul>
+<h4 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h4><p>除了页式存储、段式存储和段页式存储之外还有一种快表。<br>快表是一种高速缓存（Cache）组成的小容量的存储器，特点是速度快，一般用于存放瞬时访问最多的数据，也是很好的进程存储容器，在本文中不再详细讲解。<br>本文讲解了操作系统中进程的存储管理内容，学习了页式存储、段式存储和段页式存储的原理，熟悉逻辑地址和物理地址的转换计算方式。</p>
 
       
     </div>
@@ -415,7 +424,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="http://example.com/2023/10/18/mysql-2/" title="mysql 底层原理" target="_blank" rel="external">http://example.com/2023/10/18/mysql-2/</a>
+      <a href="http://example.com/2024/04/03/exam-study1/" title="页式存储、段式存储、段页式存储和物理逻辑地址转换" target="_blank" rel="external">http://example.com/2024/04/03/exam-study1/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -462,12 +471,12 @@
   <ul class="pager pull-left">
     
     <li class="prev">
-      <a href="/2023/10/20/snowflake/" title="分布式ID"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;Newer</span></a>
+      <a href="/2024/04/07/parenting1/" title="parenting1"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;Newer</span></a>
     </li>
     
     
     <li class="next">
-      <a href="/2023/10/18/microservice/" title="微服务相关面试"><span>Older&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+      <a href="/2023/10/20/snowflake/" title="分布式ID"><span>Older&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
     </li>
     
     
